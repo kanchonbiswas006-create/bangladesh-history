@@ -5,23 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>বাংলাদেশের ইতিহাস</title>
 
-<!-- ✅ AdSense Code -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4253919332594790"
-     crossorigin="anonymous"></script>
-
 <script src="https://cdn.tailwindcss.com"></script>
 
+<!-- 🔥 Monetag Service Worker -->
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js')
+    .then(() => console.log("Monetag Connected"));
+}
+</script>
+
 <style>
-body { font-family: sans-serif; }
-.video-bg {
+.video-bg{
   position:absolute;
   width:100%;
   height:100%;
   object-fit:cover;
 }
-.overlay {
+.overlay{
   position:absolute;
-  top:0;left:0;width:100%;height:100%;
+  width:100%;
+  height:100%;
   background:rgba(0,0,0,0.6);
 }
 </style>
@@ -29,9 +33,9 @@ body { font-family: sans-serif; }
 <script>
 let isAdmin = localStorage.getItem("admin")==="true";
 
-function go(page){
-  document.querySelectorAll(".page").forEach(p=>p.style.display="none");
-  document.getElementById(page).style.display="block";
+function go(p){
+  document.querySelectorAll(".page").forEach(e=>e.style.display="none");
+  document.getElementById(p).style.display="block";
 }
 
 function enterSite(){
@@ -40,13 +44,12 @@ function enterSite(){
 }
 
 function login(){
-  let p = document.getElementById("pass").value;
-  if(p==="admin123"){
+  if(pass.value==="admin123"){
     localStorage.setItem("admin","true");
     isAdmin=true;
     updateUI();
     go("home");
-  } else alert("Wrong Password");
+  }else alert("Wrong Password");
 }
 
 function logout(){
@@ -56,31 +59,28 @@ function logout(){
 }
 
 function updateUI(){
-  document.getElementById("adminBtn").style.display = isAdmin?"none":"block";
-  document.getElementById("logoutBtn").style.display = isAdmin?"block":"none";
-  document.getElementById("addBtn").style.display = isAdmin?"block":"none";
+  adminBtn.style.display = isAdmin?"none":"block";
+  logoutBtn.style.display = isAdmin?"block":"none";
+  addBtn.style.display = isAdmin?"block":"none";
 }
 
 function saveHistory(){
-  let file = document.getElementById("img").files[0];
-
+  let file = img.files[0];
   if(file){
-    let reader = new FileReader();
-    reader.onload = e => saveData(e.target.result);
-    reader.readAsDataURL(file);
-  } else saveData("");
+    let r=new FileReader();
+    r.onload=e=>saveData(e.target.result);
+    r.readAsDataURL(file);
+  }else saveData("");
 }
 
-function saveData(img){
-  let data = JSON.parse(localStorage.getItem("history")||"[]");
-
+function saveData(img64){
+  let data=JSON.parse(localStorage.getItem("history")||"[]");
   data.push({
     year:year.value,
     title:title.value,
     detail:details.value,
-    img:img
+    img:img64
   });
-
   localStorage.setItem("history",JSON.stringify(data));
   alert("Saved!");
   go("history");
@@ -88,33 +88,21 @@ function saveData(img){
 }
 
 function loadHistory(){
-  let data = JSON.parse(localStorage.getItem("history")||"[]");
-  let box = document.getElementById("historyBox");
-  box.innerHTML="";
-
+  let data=JSON.parse(localStorage.getItem("history")||"[]");
+  historyBox.innerHTML="";
   data.forEach((d,i)=>{
-    box.innerHTML += `
+    historyBox.innerHTML+=`
     <div class="bg-white p-3 rounded shadow mb-3">
-      <b>${d.year} - ${d.title}</b>
-      ${d.img?`<img src="${d.img}" class="mt-2 rounded">`:""}
-      <p>${d.detail}</p>
-
-      <!-- 🔥 Ad inside content -->
-      <ins class="adsbygoogle"
-       style="display:block"
-       data-ad-client="ca-pub-4253919332594790"
-       data-ad-slot="1234567890"
-       data-ad-format="auto"></ins>
-
-      ${isAdmin?`<button onclick="del(${i})" class="bg-red-500 text-white px-2 py-1 mt-2 rounded">Delete</button>`:""}
+    <b>${d.year} - ${d.title}</b>
+    ${d.img?`<img src="${d.img}" class="mt-2 rounded">`:""}
+    <p>${d.detail}</p>
+    ${isAdmin?`<button onclick="del(${i})" class="bg-red-500 text-white px-2 py-1 mt-2 rounded">Delete</button>`:""}
     </div>`;
   });
-
-  (adsbygoogle = window.adsbygoogle || []).push({});
 }
 
 function del(i){
-  let data = JSON.parse(localStorage.getItem("history"));
+  let data=JSON.parse(localStorage.getItem("history"));
   data.splice(i,1);
   localStorage.setItem("history",JSON.stringify(data));
   loadHistory();
@@ -143,9 +131,9 @@ window.onload=()=>{
 
 <div class="relative flex flex-col justify-center items-center h-full text-white text-center px-4">
 <h1 class="text-2xl font-bold mb-3">বাংলাদেশের ইতিহাস</h1>
-<p class="mb-4">Welcome to see history of Bangladesh 🇧🇩</p>
+<p>Welcome to see history of Bangladesh 🇧🇩</p>
 
-<button onclick="enterSite()" class="bg-green-500 px-6 py-2 rounded">
+<button onclick="enterSite()" class="bg-green-500 px-6 py-2 mt-4 rounded">
 ▶ Enter
 </button>
 </div>
@@ -157,7 +145,7 @@ window.onload=()=>{
 
 <h2 class="font-bold mb-2">স্বাগতম</h2>
 
-<button onclick="go('history'); loadHistory()" class="bg-green-500 text-white p-2 w-full mt-2 rounded">📚 ইতিহাস</button>
+<button onclick="go('history');loadHistory()" class="bg-green-500 text-white p-2 w-full mt-2 rounded">📚 ইতিহাস</button>
 
 <button id="adminBtn" onclick="go('login')" class="bg-purple-500 text-white p-2 w-full mt-2 rounded">Admin Login</button>
 
@@ -189,7 +177,6 @@ window.onload=()=>{
 <button onclick="saveHistory()" class="bg-green-600 text-white p-2 w-full mt-2 rounded">Save</button>
 </div>
 
-<!-- FOOTER -->
 <p class="text-center mt-4">👨‍💻 Developed by DIPTO BISWAS</p>
 
 </div>
