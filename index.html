@@ -7,7 +7,7 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 
-<!-- 🔥 Monetag Service Worker -->
+<!-- Monetag -->
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js')
@@ -33,6 +33,7 @@ if ('serviceWorker' in navigator) {
 <script>
 let isAdmin = localStorage.getItem("admin")==="true";
 
+/* -------- NAVIGATION -------- */
 function go(p){
   document.querySelectorAll(".page").forEach(e=>e.style.display="none");
   document.getElementById(p).style.display="block";
@@ -43,6 +44,7 @@ function enterSite(){
   go("home");
 }
 
+/* -------- ADMIN -------- */
 function login(){
   if(pass.value==="admin123"){
     localStorage.setItem("admin","true");
@@ -61,9 +63,12 @@ function logout(){
 function updateUI(){
   adminBtn.style.display = isAdmin?"none":"block";
   logoutBtn.style.display = isAdmin?"block":"none";
-  addBtn.style.display = isAdmin?"block":"none";
+
+  addHistoryBtn.style.display = isAdmin?"block":"none";
+  addQuizBtn.style.display = isAdmin?"block":"none";
 }
 
+/* -------- HISTORY -------- */
 function saveHistory(){
   let file = img.files[0];
   if(file){
@@ -75,12 +80,14 @@ function saveHistory(){
 
 function saveData(img64){
   let data=JSON.parse(localStorage.getItem("history")||"[]");
+
   data.push({
     year:year.value,
     title:title.value,
     detail:details.value,
     img:img64
   });
+
   localStorage.setItem("history",JSON.stringify(data));
   alert("Saved!");
   go("history");
@@ -89,25 +96,104 @@ function saveData(img64){
 
 function loadHistory(){
   let data=JSON.parse(localStorage.getItem("history")||"[]");
+
   historyBox.innerHTML="";
+
   data.forEach((d,i)=>{
     historyBox.innerHTML+=`
     <div class="bg-white p-3 rounded shadow mb-3">
     <b>${d.year} - ${d.title}</b>
     ${d.img?`<img src="${d.img}" class="mt-2 rounded">`:""}
     <p>${d.detail}</p>
-    ${isAdmin?`<button onclick="del(${i})" class="bg-red-500 text-white px-2 py-1 mt-2 rounded">Delete</button>`:""}
+    ${isAdmin?`<button onclick="delHistory(${i})" class="bg-red-500 text-white px-2 py-1 mt-2 rounded">Delete</button>`:""}
     </div>`;
   });
 }
 
-function del(i){
+function delHistory(i){
   let data=JSON.parse(localStorage.getItem("history"));
   data.splice(i,1);
   localStorage.setItem("history",JSON.stringify(data));
   loadHistory();
 }
 
+/* -------- QUIZ -------- */
+function saveQuiz(){
+  let data = JSON.parse(localStorage.getItem("quiz")||"[]");
+
+  data.push({
+    q:question.value,
+    a:opt1.value,
+    b:opt2.value,
+    c:opt3.value,
+    d:opt4.value,
+    ans:answer.value
+  });
+
+  localStorage.setItem("quiz",JSON.stringify(data));
+  alert("Quiz Saved!");
+  go("quiz");
+  loadQuiz();
+}
+
+let currentQ = 0;
+let score = 0;
+
+function loadQuiz(){
+  let data = JSON.parse(localStorage.getItem("quiz")||"[]");
+
+  if(data.length==0){
+    quizBox.innerHTML="<p>No Quiz Found</p>";
+    return;
+  }
+
+  currentQ = 0;
+  score = 0;
+  showQ();
+}
+
+function showQ(){
+  let data = JSON.parse(localStorage.getItem("quiz"));
+  let q = data[currentQ];
+
+  quizBox.innerHTML=`
+  <div class="bg-white p-3 rounded shadow">
+  <h3>${q.q}</h3>
+
+  <button onclick="check('a')" class="block w-full bg-gray-200 p-2 mt-2">${q.a}</button>
+  <button onclick="check('b')" class="block w-full bg-gray-200 p-2 mt-2">${q.b}</button>
+  <button onclick="check('c')" class="block w-full bg-gray-200 p-2 mt-2">${q.c}</button>
+  <button onclick="check('d')" class="block w-full bg-gray-200 p-2 mt-2">${q.d}</button>
+
+  ${isAdmin?`<button onclick="delQuiz(${currentQ})" class="bg-red-500 text-white px-2 py-1 mt-2 rounded">Delete</button>`:""}
+
+  </div>
+  `;
+}
+
+function check(ans){
+  let data = JSON.parse(localStorage.getItem("quiz"));
+
+  if(ans == data[currentQ].ans) score++;
+
+  currentQ++;
+
+  if(currentQ < data.length){
+    showQ();
+  }else{
+    quizBox.innerHTML=`<h2>Score: ${score}/${data.length}</h2>
+    <button onclick="loadQuiz()" class="bg-green-500 text-white p-2 mt-2 rounded">Play Again</button>`;
+  }
+}
+
+function delQuiz(i){
+  let data = JSON.parse(localStorage.getItem("quiz"));
+  data.splice(i,1);
+  localStorage.setItem("quiz",JSON.stringify(data));
+  loadQuiz();
+}
+
+/* -------- LOAD -------- */
 window.onload=()=>{
   go("intro");
   updateUI();
@@ -120,37 +206,31 @@ window.onload=()=>{
 
 <div class="max-w-md mx-auto min-h-screen relative">
 
-<!-- VIDEO INTRO -->
+<!-- INTRO -->
 <div id="intro" class="page h-screen relative overflow-hidden">
-
 <video autoplay muted loop playsinline class="video-bg">
   <source src="video.mp4" type="video/mp4">
 </video>
-
 <div class="overlay"></div>
 
 <div class="relative flex flex-col justify-center items-center h-full text-white text-center px-4">
 <h1 class="text-2xl font-bold mb-3">বাংলাদেশের ইতিহাস</h1>
-<p>Welcome to see history of Bangladesh 🇧🇩</p>
-
-<button onclick="enterSite()" class="bg-green-500 px-6 py-2 mt-4 rounded">
-▶ Enter
-</button>
+<p>Welcome 🇧🇩</p>
+<button onclick="enterSite()" class="bg-green-500 px-6 py-2 mt-4 rounded">Enter</button>
 </div>
-
 </div>
 
 <!-- HOME -->
 <div id="home" class="page hidden text-center p-4">
-
 <h2 class="font-bold mb-2">স্বাগতম</h2>
 
 <button onclick="go('history');loadHistory()" class="bg-green-500 text-white p-2 w-full mt-2 rounded">📚 ইতিহাস</button>
 
+<button onclick="go('quiz');loadQuiz()" class="bg-blue-500 text-white p-2 w-full mt-2 rounded">🧠 Quiz</button>
+
 <button id="adminBtn" onclick="go('login')" class="bg-purple-500 text-white p-2 w-full mt-2 rounded">Admin Login</button>
 
 <button id="logoutBtn" onclick="logout()" class="bg-gray-500 text-white p-2 w-full mt-2 rounded hidden">Logout</button>
-
 </div>
 
 <!-- LOGIN -->
@@ -163,7 +243,7 @@ window.onload=()=>{
 <div id="history" class="page hidden p-4">
 <button onclick="go('home')">← Back</button>
 
-<button id="addBtn" onclick="go('form')" class="bg-green-500 text-white p-2 w-full mt-2 rounded hidden">Add History</button>
+<button id="addHistoryBtn" onclick="go('form')" class="bg-green-500 text-white p-2 w-full mt-2 rounded hidden">Add History</button>
 
 <div id="historyBox"></div>
 </div>
@@ -177,9 +257,32 @@ window.onload=()=>{
 <button onclick="saveHistory()" class="bg-green-600 text-white p-2 w-full mt-2 rounded">Save</button>
 </div>
 
+<!-- QUIZ -->
+<div id="quiz" class="page hidden p-4">
+<button onclick="go('home')">← Back</button>
+
+<button id="addQuizBtn" onclick="go('quizForm')" class="bg-blue-500 text-white p-2 w-full mt-2 rounded hidden">Add Quiz</button>
+
+<div id="quizBox"></div>
+</div>
+
+<!-- QUIZ FORM -->
+<div id="quizForm" class="page hidden p-4">
+<input id="question" placeholder="Question" class="border p-2 w-full mt-2">
+
+<input id="opt1" placeholder="Option A" class="border p-2 w-full mt-2">
+<input id="opt2" placeholder="Option B" class="border p-2 w-full mt-2">
+<input id="opt3" placeholder="Option C" class="border p-2 w-full mt-2">
+<input id="opt4" placeholder="Option D" class="border p-2 w-full mt-2">
+
+<input id="answer" placeholder="Correct (a/b/c/d)" class="border p-2 w-full mt-2">
+
+<button onclick="saveQuiz()" class="bg-green-600 text-white p-2 w-full mt-2 rounded">Save Quiz</button>
+</div>
+
 <p class="text-center mt-4">👨‍💻 Developed by DIPTO BISWAS</p>
 
 </div>
 
 </body>
-</html>
+  </html>
