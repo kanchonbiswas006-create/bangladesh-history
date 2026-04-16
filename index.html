@@ -7,179 +7,113 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 
-<!-- 🔥 Monetag Service Worker -->
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js')
-    .then(() => console.log("Monetag Connected"));
-}
-</script>
-
 <style>
-.video-bg{
-  position:absolute;
-  width:100%;
-  height:100%;
-  object-fit:cover;
+.video-bg {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
 }
-.overlay{
-  position:absolute;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.6);
+.overlay {
+  background: rgba(0,0,0,0.6);
+  min-height: 100vh;
+  color: white;
+  padding: 20px;
 }
 </style>
-
-<script>
-let isAdmin = localStorage.getItem("admin")==="true";
-
-function go(p){
-  document.querySelectorAll(".page").forEach(e=>e.style.display="none");
-  document.getElementById(p).style.display="block";
-}
-
-function enterSite(){
-  document.getElementById("intro").style.display="none";
-  go("home");
-}
-
-function login(){
-  if(pass.value==="admin123"){
-    localStorage.setItem("admin","true");
-    isAdmin=true;
-    updateUI();
-    go("home");
-  }else alert("Wrong Password");
-}
-
-function logout(){
-  localStorage.removeItem("admin");
-  isAdmin=false;
-  updateUI();
-}
-
-function updateUI(){
-  adminBtn.style.display = isAdmin?"none":"block";
-  logoutBtn.style.display = isAdmin?"block":"none";
-  addBtn.style.display = isAdmin?"block":"none";
-}
-
-function saveHistory(){
-  let file = img.files[0];
-  if(file){
-    let r=new FileReader();
-    r.onload=e=>saveData(e.target.result);
-    r.readAsDataURL(file);
-  }else saveData("");
-}
-
-function saveData(img64){
-  let data=JSON.parse(localStorage.getItem("history")||"[]");
-  data.push({
-    year:year.value,
-    title:title.value,
-    detail:details.value,
-    img:img64
-  });
-  localStorage.setItem("history",JSON.stringify(data));
-  alert("Saved!");
-  go("history");
-  loadHistory();
-}
-
-function loadHistory(){
-  let data=JSON.parse(localStorage.getItem("history")||"[]");
-  historyBox.innerHTML="";
-  data.forEach((d,i)=>{
-    historyBox.innerHTML+=`
-    <div class="bg-white p-3 rounded shadow mb-3">
-    <b>${d.year} - ${d.title}</b>
-    ${d.img?`<img src="${d.img}" class="mt-2 rounded">`:""}
-    <p>${d.detail}</p>
-    ${isAdmin?`<button onclick="del(${i})" class="bg-red-500 text-white px-2 py-1 mt-2 rounded">Delete</button>`:""}
-    </div>`;
-  });
-}
-
-function del(i){
-  let data=JSON.parse(localStorage.getItem("history"));
-  data.splice(i,1);
-  localStorage.setItem("history",JSON.stringify(data));
-  loadHistory();
-}
-
-window.onload=()=>{
-  go("intro");
-  updateUI();
-};
-</script>
-
 </head>
 
-<body class="bg-gray-100">
+<body>
 
-<div class="max-w-md mx-auto min-h-screen relative">
-
-<!-- VIDEO INTRO -->
-<div id="intro" class="page h-screen relative overflow-hidden">
-
-<video autoplay muted loop playsinline class="video-bg">
+<video autoplay muted loop class="video-bg">
   <source src="video.mp4" type="video/mp4">
 </video>
 
-<div class="overlay"></div>
+<div class="overlay">
 
-<div class="relative flex flex-col justify-center items-center h-full text-white text-center px-4">
-<h1 class="text-2xl font-bold mb-3">বাংলাদেশের ইতিহাস</h1>
-<p>Welcome to see history of Bangladesh 🇧🇩</p>
+<h1 class="text-3xl font-bold text-center">
+Welcome to see history of Bangladesh
+</h1>
 
-<button onclick="enterSite()" class="bg-green-500 px-6 py-2 mt-4 rounded">
-▶ Enter
+<!-- 📜 Content দেখানোর জায়গা -->
+<div id="content" class="mt-10 text-lg"></div>
+
+<!-- 🔐 Login Button -->
+<div class="mt-10 text-center">
+<button onclick="showLogin()" class="bg-blue-500 px-4 py-2 rounded">
+Admin Login
 </button>
 </div>
 
 </div>
 
-<!-- HOME -->
-<div id="home" class="page hidden text-center p-4">
-
-<h2 class="font-bold mb-2">স্বাগতম</h2>
-
-<button onclick="go('history');loadHistory()" class="bg-green-500 text-white p-2 w-full mt-2 rounded">📚 ইতিহাস</button>
-
-<button id="adminBtn" onclick="go('login')" class="bg-purple-500 text-white p-2 w-full mt-2 rounded">Admin Login</button>
-
-<button id="logoutBtn" onclick="logout()" class="bg-gray-500 text-white p-2 w-full mt-2 rounded hidden">Logout</button>
-
+<!-- 🔐 LOGIN PANEL -->
+<div id="loginBox" class="hidden fixed top-0 left-0 w-full h-full bg-black bg-opacity-80 flex justify-center items-center">
+  <div class="bg-white text-black p-5 rounded">
+    <h2 class="text-xl mb-3">Admin Login</h2>
+    <input id="pass" type="password" placeholder="Password" class="border p-2 w-full">
+    <button onclick="login()" class="bg-green-500 text-white px-4 py-2 mt-3 w-full">Login</button>
+  </div>
 </div>
 
-<!-- LOGIN -->
-<div id="login" class="page hidden p-4">
-<input id="pass" type="password" placeholder="Password" class="border p-2 w-full">
-<button onclick="login()" class="bg-green-500 text-white p-2 w-full mt-2 rounded">Login</button>
+<!-- 🛠️ ADMIN PANEL -->
+<div id="adminPanel" class="hidden fixed top-0 left-0 w-full h-full bg-black bg-opacity-90 p-5 text-white">
+  <h2 class="text-2xl mb-5">Admin Panel</h2>
+
+  <textarea id="newContent" placeholder="Write content..." class="w-full p-3 text-black"></textarea>
+
+  <button onclick="saveContent()" class="bg-green-500 px-4 py-2 mt-3">Save</button>
+  <button onclick="logout()" class="bg-red-500 px-4 py-2 mt-3">Logout</button>
 </div>
 
-<!-- HISTORY -->
-<div id="history" class="page hidden p-4">
-<button onclick="go('home')">← Back</button>
+<!-- 🔥 Monetag -->
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js');
+}
+</script>
 
-<button id="addBtn" onclick="go('form')" class="bg-green-500 text-white p-2 w-full mt-2 rounded hidden">Add History</button>
+<!-- ⚙️ Script -->
+<script>
 
-<div id="historyBox"></div>
-</div>
+function showLogin(){
+  document.getElementById("loginBox").classList.remove("hidden");
+}
 
-<!-- FORM -->
-<div id="form" class="page hidden p-4">
-<input id="year" placeholder="Year" class="border p-2 w-full mt-2">
-<input id="title" placeholder="Title" class="border p-2 w-full mt-2">
-<textarea id="details" class="border p-2 w-full mt-2"></textarea>
-<input type="file" id="img" class="mt-2">
-<button onclick="saveHistory()" class="bg-green-600 text-white p-2 w-full mt-2 rounded">Save</button>
-</div>
+function login(){
+  let pass = document.getElementById("pass").value;
+  if(pass === "1234"){
+    document.getElementById("loginBox").classList.add("hidden");
+    document.getElementById("adminPanel").classList.remove("hidden");
+  } else {
+    alert("Wrong Password");
+  }
+}
 
-<p class="text-center mt-4">👨‍💻 Developed by DIPTO BISWAS</p>
+function logout(){
+  document.getElementById("adminPanel").classList.add("hidden");
+}
 
-</div>
+function saveContent(){
+  let text = document.getElementById("newContent").value;
+  localStorage.setItem("siteContent", text);
+  loadContent();
+  alert("Saved!");
+}
+
+function loadContent(){
+  let data = localStorage.getItem("siteContent");
+  if(data){
+    document.getElementById("content").innerHTML = data;
+  } else {
+    document.getElementById("content").innerHTML = "এখানে কনটেন্ট যোগ করুন";
+  }
+}
+
+loadContent();
+
+</script>
 
 </body>
 </html>
