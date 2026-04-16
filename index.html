@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>বাংলাদেশের ইতিহাস</title>
 
+<!-- ✅ AdSense Code -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4253919332594790"
+     crossorigin="anonymous"></script>
+
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
@@ -25,19 +29,16 @@ body { font-family: sans-serif; }
 <script>
 let isAdmin = localStorage.getItem("admin")==="true";
 
-// page control
 function go(page){
   document.querySelectorAll(".page").forEach(p=>p.style.display="none");
   document.getElementById(page).style.display="block";
 }
 
-// enter
 function enterSite(){
   document.getElementById("intro").style.display="none";
   go("home");
 }
 
-// login
 function login(){
   let p = document.getElementById("pass").value;
   if(p==="admin123"){
@@ -48,21 +49,18 @@ function login(){
   } else alert("Wrong Password");
 }
 
-// logout
 function logout(){
   localStorage.removeItem("admin");
   isAdmin=false;
   updateUI();
 }
 
-// UI update
 function updateUI(){
   document.getElementById("adminBtn").style.display = isAdmin?"none":"block";
   document.getElementById("logoutBtn").style.display = isAdmin?"block":"none";
   document.getElementById("addBtn").style.display = isAdmin?"block":"none";
 }
 
-// save history + image
 function saveHistory(){
   let file = document.getElementById("img").files[0];
 
@@ -89,7 +87,6 @@ function saveData(img){
   loadHistory();
 }
 
-// load history
 function loadHistory(){
   let data = JSON.parse(localStorage.getItem("history")||"[]");
   let box = document.getElementById("historyBox");
@@ -101,12 +98,21 @@ function loadHistory(){
       <b>${d.year} - ${d.title}</b>
       ${d.img?`<img src="${d.img}" class="mt-2 rounded">`:""}
       <p>${d.detail}</p>
+
+      <!-- 🔥 Ad inside content -->
+      <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-4253919332594790"
+       data-ad-slot="1234567890"
+       data-ad-format="auto"></ins>
+
       ${isAdmin?`<button onclick="del(${i})" class="bg-red-500 text-white px-2 py-1 mt-2 rounded">Delete</button>`:""}
     </div>`;
   });
+
+  (adsbygoogle = window.adsbygoogle || []).push({});
 }
 
-// delete
 function del(i){
   let data = JSON.parse(localStorage.getItem("history"));
   data.splice(i,1);
@@ -114,7 +120,6 @@ function del(i){
   loadHistory();
 }
 
-// init
 window.onload=()=>{
   go("intro");
   updateUI();
@@ -127,10 +132,10 @@ window.onload=()=>{
 
 <div class="max-w-md mx-auto min-h-screen relative">
 
-<!-- 🎬 VIDEO INTRO -->
+<!-- VIDEO INTRO -->
 <div id="intro" class="page h-screen relative overflow-hidden">
 
-<video autoplay muted loop playsinline poster="poster.jpg" class="video-bg">
+<video autoplay muted loop playsinline class="video-bg">
   <source src="video.mp4" type="video/mp4">
 </video>
 
@@ -138,7 +143,7 @@ window.onload=()=>{
 
 <div class="relative flex flex-col justify-center items-center h-full text-white text-center px-4">
 <h1 class="text-2xl font-bold mb-3">বাংলাদেশের ইতিহাস</h1>
-<p class="mb-4">🇧🇩 Welcome to explore the History of Bangladesh</p>
+<p class="mb-4">Welcome to see history of Bangladesh 🇧🇩</p>
 
 <button onclick="enterSite()" class="bg-green-500 px-6 py-2 rounded">
 ▶ Enter
